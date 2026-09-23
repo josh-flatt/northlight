@@ -4,7 +4,7 @@ version = "0.0.0a"
 authors = [
   { name="Josh", email="josh.m.flatt@gmail.com" },
 ]
-description = "Example project"
+description = "Commonly used tools throughout my Python projects"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -15,8 +15,8 @@ license = "MIT"
 license-files = ["LICENSE"]
 
 [project.urls]
-Homepage = "https://github.com/josh-flatt/ember"
-Issues = "https://github.com/josh-flatt/ember/issues"
+Homepage = "https://github.com/josh-flatt/northlight"
+Issues = "https://github.com/josh-flatt/northlight/issues"
 
 [build-system]
 requires = ["hatchling"]
