@@ -1,5 +1,5 @@
 
-![Northlight Logo](./docs/attachments/josh-flatt/northlight/main/logo.png)
+![Northlight Logo](./docs/attachments/logo.png)
 
 # Northlight
 
