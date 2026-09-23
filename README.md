@@ -10,11 +10,13 @@
 
 Northlight is a package of tools commonly used throughout my Python projects.
 
-Documentation: [https://github.com/josh-flatt/northlight#readme](https://github.com/josh-flatt/northlight#readme)
-Source Code: [https://github.com/josh-flatt/northlight](https://github.com/josh-flatt/northlight)
-License: [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-Contributing: [https://github.com/josh-flatt/northlight#contributing](https://github.com/josh-flatt/northlight#contributing)
-Issues: [https://github.com/josh-flatt/northlight/issues](https://github.com/josh-flatt/northlight/issues)
+## Useful Links
+
+- **Documentation**: [https://github.com/josh-flatt/northlight#readme](https://github.com/josh-flatt/northlight#readme)
+- **Source Code**: [https://github.com/josh-flatt/northlight](https://github.com/josh-flatt/northlight)
+- **License**: [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+- **Contributing**: [https://github.com/josh-flatt/northlight#contributing](https://github.com/josh-flatt/northlight#contributing)
+- **Issues**: [https://github.com/josh-flatt/northlight/issues](https://github.com/josh-flatt/northlight/issues)
 
 ## Features
 
