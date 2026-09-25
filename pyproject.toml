@@ -5,11 +5,13 @@ authors = [
   { name="Josh", email="josh.m.flatt@gmail.com" },
 ]
 dependencies = [
-    "hatchling",
     "datetime",
+    "hatchling",
     "logging",
+    "pandas",
+    "paramiko",
     "python-dotenv",
-    "paramiko"
+    "uopy",
 ]
 description = "Commonly used tools throughout my Python projects"
 readme = "README.md"
