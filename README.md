@@ -20,7 +20,9 @@ Northlight is a package of tools commonly used throughout my Python projects.
 
 ## Features
 
-TODO
+- LoggingClient: Handling and standardizing logging.
+- SFTPClient: Interacting with SFTP servers.
+- UniDataClient: Connecting to and interacting with UniData databases.
 
 ## How to Install
 
@@ -33,7 +35,13 @@ pip install northlight
 
 ## Dependencies
 
-TODO
+Northlight has the following dependencies:
+
+- Python 3.12 or higher
+- pandas
+- paramiko
+- python-dotenv
+- uopy
 
 ## License
 
