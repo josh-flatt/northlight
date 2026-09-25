@@ -1,5 +1,5 @@
 
-![Northlight Logo](https://github.com/josh-flatt/northlight/blob/main/docs/attachments/logo.png)
+![Northlight Logo](https://raw.githubusercontent.com/josh-flatt/northlight/main/docs/attachments/logo.png)
 
 # Northlight
 
