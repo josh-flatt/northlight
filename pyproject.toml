@@ -4,6 +4,13 @@ version = "0.0.0a"
 authors = [
   { name="Josh", email="josh.m.flatt@gmail.com" },
 ]
+dependencies = [
+    "hatchling",
+    "datetime",
+    "logging",
+    "python-dotenv",
+    "paramiko"
+]
 description = "Commonly used tools throughout my Python projects"
 readme = "README.md"
 requires-python = ">=3.12"
