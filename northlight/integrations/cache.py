@@ -76,6 +76,7 @@ class Cache:
                 del self._cache[key]
                 self._save_cache()
                 return None
+        self._logger.info(f"Key '{key}' found and valid in cache.")
         return entry["value"]
 
     def set(self, key: str, value: Any, expires: datetime.timedelta | None = None):
@@ -113,6 +114,7 @@ class Cache:
             "value": value,
             "expires": expiration_timestamp,
         }
+        self._logger.info(f"Key '{key}' saved in cache.")
         self._save_cache()
 
     def delete(self, key: str) -> bool:
@@ -136,6 +138,7 @@ class Cache:
         if key in self._cache:
             del self._cache[key]
             self._save_cache()
+            self._logger.info(f"Key '{key}' deleted from cache.")
             return True
         self._logger.info(f"Key '{key}' not found in cache.")
         return False
@@ -173,7 +176,12 @@ class Cache:
             if entry["expires"] is not None and entry["expires"] < now
         ]
         for key in keys_to_delete:
+            expiration_dt = datetime.datetime.fromtimestamp(self._cache[key]["expires"])
+            self._logger.info(
+                f"Key '{key}' has expired (was {expiration_dt.strftime('%Y-%m-%d %H:%M:%S')})."
+            )
             del self._cache[key]
+            self._logger.info(f"Key '{key}' removed.")
 
         return len(keys_to_delete)
 
@@ -196,4 +204,4 @@ class Cache:
         None
         """
         with open(self._cache_file, "w") as f:
-            json.dump(self._cache, f)
+            json.dump(self._cache, f, indent=4)
