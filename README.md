@@ -20,6 +20,7 @@ Northlight is a package of tools commonly used throughout my Python projects.
 
 ## Features
 
+- Cache (still in development): Managing cached data with optional expiration.
 - LoggingClient: Handling and standardizing logging.
 - SFTPClient: Interacting with SFTP servers.
 - UniDataClient: Connecting to and interacting with UniData databases.

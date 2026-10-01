@@ -2,6 +2,7 @@ import json
 import os
 import datetime
 import logging
+from typing import Any
 
 
 class Cache:
@@ -38,7 +39,7 @@ class Cache:
             self._logger.info(f"Cleared {removed} expired cache entries.")
             self._save_cache()
 
-    def get(self, key):
+    def get(self, key: str):
         """
         Retrieves a value from the cache by its key.
 
@@ -64,19 +65,20 @@ class Cache:
             self._logger.info(f"Key '{key}' not found in cache.")
             return None
         if entry is None:
-            self._logger.info(f"Cache entry for key '{key}' is None.")
+            self._logger.info(f"Key '{key}' not found in cache or entry is None.")
             return None
         if entry["expires"] is not None:
             if datetime.datetime.now().timestamp() > entry["expires"]:
+                expiration_dt = datetime.datetime.fromtimestamp(entry["expires"])
                 self._logger.info(
-                    f"Cache entry for key '{key}' has expired (was {entry['expires']})."
+                    f"Cache entry for key '{key}' has expired (was {expiration_dt.strftime('%Y-%m-%d %H:%M:%S')})."
                 )
                 del self._cache[key]
                 self._save_cache()
                 return None
         return entry["value"]
 
-    def set(self, key, value, expires: datetime.timedelta | None = None):
+    def set(self, key: str, value: Any, expires: datetime.timedelta | None = None):
         """
         Sets a value in the cache with an optional expiration time.
 
@@ -113,7 +115,7 @@ class Cache:
         }
         self._save_cache()
 
-    def delete(self, key) -> bool:
+    def delete(self, key: str) -> bool:
         """
         Deletes a value from the cache by its key.
 
@@ -172,8 +174,7 @@ class Cache:
         ]
         for key in keys_to_delete:
             del self._cache[key]
-        if keys_to_delete:
-            self._save_cache()
+
         return len(keys_to_delete)
 
     def _load_cache(self):
