@@ -1,14 +1,12 @@
-import uopy
-import pandas as pd
-import logging
 import json
-from importlib.resources import files
-import os
+import logging
+import pandas as pd
 import sys
-from dotenv import load_dotenv
-import uopy._errorcodes
-import warnings
 import re
+import uopy
+
+from importlib.resources import files
+from dotenv import load_dotenv
 from typing import Optional
 
 from northlight.integrations.exceptions import ErrorLimitExceededError
@@ -126,7 +124,6 @@ class UniDataClient:
 
         results = ""
         cmd = self.cmd
-        # cmd = uopy.Command(session=self.session)
 
         # Reset UniData select lists
         if clear_selects:
