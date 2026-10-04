@@ -16,7 +16,12 @@ from northlight.integrations.exceptions import ErrorLimitExceededError
 
 class UniDataClient:
     def __init__(
-        self, hostname: str, username: str, password: str, path: str, port: int
+        self,
+        hostname: str,
+        username: str,
+        password: str,
+        path: str,
+        port: int,
     ):
         """
         Initializes a new instance of the class.
@@ -43,12 +48,12 @@ class UniDataClient:
         `__generate_connection()`
             Generates the connection to the database.
         """
-        self.hostname = hostname
-        self.username = username
-        self.password = password
-        self.path = path
-        self.port = port
-        self.logger = logging.getLogger(__name__)
+        self._hostname = hostname
+        self._username = username
+        self._password = password
+        self._path = path
+        self._port = port
+        self._logger = logging.getLogger(__name__)
 
         # Error codes can be viewed at:
         # https://docs.rocketsoftware.com/bundle/grv1653317862214_grv1653317862214/page/nhb1653316841876.html
@@ -79,11 +84,11 @@ class UniDataClient:
             The session object representing the connection to the database.
         """
         self.session = uopy.connect(
-            host=self.hostname,
-            user=self.username,
-            password=self.password,
-            account=self.path,
-            port=self.port,
+            host=self._hostname,
+            user=self._username,
+            password=self._password,
+            account=self._path,
+            port=self._port,
             encoding="iso-8859-1",
         )
         self.cmd = uopy.Command(session=self.session)
@@ -125,12 +130,12 @@ class UniDataClient:
 
         # Reset UniData select lists
         if clear_selects:
-            self.logger.debug("Resetting UniData select lists.")
+            self._logger.debug("Resetting UniData select lists.")
             cmd.command_text = "CLEARSELECT ALL"
             cmd.run()
 
         for query in queries:
-            self.logger.debug(f"Query: {query}")
+            self._logger.debug(f"Query: {query}")
 
             try:
                 cmd.command_text = query
@@ -157,7 +162,7 @@ class UniDataClient:
                 cleaned_lines = self.__clean_response_lines(response)
 
                 if is_error:
-                    self.logger.error(
+                    self._logger.error(
                         f"{query} ---------------> (Error): {cleaned_lines[0] if cleaned_lines else response}"
                     )
 
@@ -165,7 +170,9 @@ class UniDataClient:
                         raise RuntimeError(response)
 
                 elif is_no_data:
-                    self.logger.warning(f"{query} ---------------> (No data returned.)")
+                    self._logger.warning(
+                        f"{query} ---------------> (No data returned.)"
+                    )
                     if stop_on_empty:
                         return None
 
@@ -173,15 +180,15 @@ class UniDataClient:
                     summary = (
                         f"{record_count} records" if record_count is not None else "OK"
                     )
-                    self.logger.info(f"{query} ---------------> ({summary})")
+                    self._logger.info(f"{query} ---------------> ({summary})")
 
                     for line in cleaned_lines:
-                        self.logger.debug(f"[{query}]: {line}")
+                        self._logger.debug(f"[{query}]: {line}")
 
                 results = response
 
             except Exception:
-                self.logger.exception(f"Failed query: {query}")
+                self._logger.exception(f"Failed query: {query}")
                 raise
 
         return results
@@ -224,16 +231,16 @@ class UniDataClient:
         except TypeError as e:
             error = str(sys.exc_info()[1])
             if "NoneType" in error:
-                self.logger.warning(
+                self._logger.warning(
                     f"No data was selected from file '{filename}' or list."
                 )
             else:
                 raise Exception(error)
         except Exception as e:
-            self.logger.error(e)
+            self._logger.error(e)
             raise
         finally:
-            self.logger.info(f"{len(data)} records returned from file '{filename}'.")
+            self._logger.info(f"{len(data)} records returned from file '{filename}'.")
         return data
 
     def update_file_data(
@@ -329,9 +336,9 @@ class UniDataClient:
 
                 if response_code != "0":
                     error_count += 1
-                    self.logger.error(log_msg)
+                    self._logger.error(log_msg)
                 else:
-                    self.logger.info(log_msg)
+                    self._logger.info(log_msg)
 
             if error_count > max_errors:
                 raise ErrorLimitExceededError(
@@ -340,25 +347,25 @@ class UniDataClient:
 
             if is_test:
                 self.session.tx_rollback()
-                self.logger.warning(
+                self._logger.warning(
                     f"(Test) Succeeded with {error_count} error(s). Transaction rolled back."
                 )
                 return True
 
-            self.logger.info(f"Transaction complete with {error_count} error(s).")
+            self._logger.info(f"Transaction complete with {error_count} error(s).")
 
             self.session.tx_commit()
-            self.logger.info("Transaction committed successfully.")
+            self._logger.info("Transaction committed successfully.")
 
             return True
 
         except ErrorLimitExceededError as e:
-            self.logger.critical(e)
+            self._logger.critical(e)
             self.session.tx_rollback()
             raise
 
         except Exception as e:
-            self.logger.critical(f"Unexpected exception occurred: {e}")
+            self._logger.critical(f"Unexpected exception occurred: {e}")
             self.session.tx_rollback()
             raise
 
