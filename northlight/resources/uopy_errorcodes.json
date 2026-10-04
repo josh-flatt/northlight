@@ -1,0 +1,394 @@
+{
+    "0": {
+        "Token": "UVE_NOERROR",
+        "Description": "No error"
+    },
+    "14002": {
+        "Token": "UVE_ENOENT",
+        "Description": "No such file or directory"
+    },
+    "14005": {
+        "Token": "UVE_EIO",
+        "Description": "I\/O error"
+    },
+    "14009": {
+        "Token": "UVE_EBADF",
+        "Description": "Bad file number"
+    },
+    "14012": {
+        "Token": "UVE_ENOMEM",
+        "Description": "No memory available"
+    },
+    "14013": {
+        "Token": "UVE_EACCES",
+        "Description": "Permission denied"
+    },
+    "14022": {
+        "Token": "UVE_EINVAL",
+        "Description": "Invalid argument"
+    },
+    "14023": {
+        "Token": "UVE_ENFILE",
+        "Description": "File table overflow"
+    },
+    "14024": {
+        "Token": "UVE_EMFILE",
+        "Description": "Too many open files"
+    },
+    "14028": {
+        "Token": "UVE_ENOSPC",
+        "Description": "No space left on device"
+    },
+    "14551": {
+        "Token": "UVE_NETUNREACH",
+        "Description": "Network is unreachable"
+    },
+    "22001": {
+        "Token": "UVE_BFN",
+        "Description": "Bad Field Number"
+    },
+    "22002": {
+        "Token": "UVE_BTS",
+        "Description": "Buffer size too small"
+    },
+    "20003": {
+        "Token": "UVE_IID",
+        "Description": "Illegal record ID"
+    },
+    "22004": {
+        "Token": "UVE_LRR",
+        "Description": "The last record in the select list has been read"
+    },
+    "22005": {
+        "Token": "UVE_NFI",
+        "Description": "Not a file identifier"
+    },
+    "30001": {
+        "Token": "UVE_RNF",
+        "Description": "Record not found"
+    },
+    "30002": {
+        "Token": "UVE_LCK",
+        "Description": "This file or record is locked by another user"
+    },
+    "30095": {
+        "Token": "UVE_FIFS",
+        "Description": "The file ID is incorrect for the current session"
+    },
+    "30097": {
+        "Token": "UVE_SELFAIL",
+        "Description": "The select operation failed"
+    },
+    "30098": {
+        "Token": "UVE_LOCKINVALID",
+        "Description": "The task lock number specified is invalid"
+    },
+    "30099": {
+        "Token": "UVE_SEQOPENED",
+        "Description": "The file was opened for sequential access and you have attempted hashed access"
+    },
+    "30100": {
+        "Token": "UVE_HASHOPENED",
+        "Description": "The file was opened for hashed access and you have attempted sequential access"
+    },
+    "30101": {
+        "Token": "UVE_SEEKFAILED",
+        "Description": "The operation using fileSeek()failed"
+    },
+    "30103": {
+        "Token": "UVE_INVALIDATKEY",
+        "Description": "The key used to set or retrieve an @variable is invalid"
+    },
+    "30105": {
+        "Token": "UVE_UNABLETOLOADSUB",
+        "Description": "Unable to load the subroutine on the server"
+    },
+    "30106": {
+        "Token": "UVE_BADNUMARGS",
+        "Description": "Too few or too many arguments supplied to the subroutine"
+    },
+    "30107": {
+        "Token": "UVE_SUBERROR",
+        "Description": "The subroutine failed to complete successfully"
+    },
+    "30108": {
+        "Token": "UVE_ITYPEFTC",
+        "Description": "The I-type operation failed to complete correctly"
+    },
+    "30109": {
+        "Token": "UVE_ITYPEFAILEDTOLOAD",
+        "Description": "The I-type failed to load"
+    },
+    "30110": {
+        "Token": "UVE_ITYPENOTCOMPILED",
+        "Description": "The I-type has not been compiled"
+    },
+    "30111": {
+        "Token": "UVE_BADITYPE",
+        "Description": "This is not an I-type, or the I-type is corrupt"
+    },
+    "30112": {
+        "Token": "UVE_INVALIDFILENAME",
+        "Description": "Must specify a filename"
+    },
+    "30113": {
+        "Token": "UVE_WEOFFAILED",
+        "Description": "WEOFSEQ failed"
+    },
+    "30114": {
+        "Token": "UVE_EXECUTEISACTIVE",
+        "Description": "An EXECUTE is currently active on the server"
+    },
+    "30115": {
+        "Token": "UVE_EXECUTENOTACTIVE",
+        "Description": "No EXECUTE is currently active on the server"
+    },
+    "30124": {
+        "Token": "UVE_TX_ACTIVE",
+        "Description": "Cannot perform this operation while a transaction is active"
+    },
+    "30125": {
+        "Token": "UVE_CANT_ACCESS_PF",
+        "Description": "Cannot access part files"
+    },
+    "30126": {
+        "Token": "UVE_FAIL_TO_CANCEL",
+        "Description": "Failed to cancel an execute"
+    },
+    "30127": {
+        "Token": "UVE_INVALID_INFO_KEY",
+        "Description": "Bad key for the host type"
+    },
+    "30128": {
+        "Token": "UVE_CREATE_FAILED",
+        "Description": "The creation of a sequential file failed"
+    },
+    "30129": {
+        "Token": "UVE_DUPHANDLE_FAILED",
+        "Description": "Failed to duplicate a pipe handle"
+    },
+    "31000": {
+        "Token": "UVE_NVR",
+        "Description": "No VOC record"
+    },
+    "31001": {
+        "Token": "UVE_NPN",
+        "Description": "No pathname in VOC record"
+    },
+    "39101": {
+        "Token": "UVE_NODATA",
+        "Description": "The server is not responding"
+    },
+    "39119": {
+        "Token": "UVE_AT_INPUT",
+        "Description": "The server is waiting for input to a command"
+    },
+    "39120": {
+        "Token": "UVE_SESSION_NOT_OPEN",
+        "Description": "The session is not open"
+    },
+    "39121": {
+        "Token": "UVE_UVEXPIRED",
+        "Description": "The database license has expired"
+    },
+    "39122": {
+        "Token": "UVE_CSVERSION",
+        "Description": "The client and the server are not running at the same release level"
+    },
+    "39123": {
+        "Token": "UVE_COMMSVERSION",
+        "Description": "The client or server is not running at the same release level as the communications support"
+    },
+    "39124": {
+        "Token": "UVE_BADSIG",
+        "Description": "You are trying to communicate with the wrong client or server"
+    },
+    "39125": {
+        "Token": "UVE_BADDIR",
+        "Description": "The directory does not exist or is not a database account"
+    },
+    "39127": {
+        "Token": "UVE_BAD_UVHOME",
+        "Description": "Cannot find the UV account directory"
+    },
+    "39128": {
+        "Token": "UVE_INVALIDPATH",
+        "Description": "An invalid pathname was found in the UV.ACCOUNT file"
+    },
+    "39129": {
+        "Token": "UVE_INVALIDACCOUNT",
+        "Description": "The account name supplied is not an account"
+    },
+    "39130": {
+        "Token": "UVE_BAD_UVACCOUNT_FILE",
+        "Description": "The UV.ACCOUNT file could not be found or opened"
+    },
+    "39131": {
+        "Token": "UVE_FTA_NEW_ACCOUNT",
+        "Description": "Failed to attach to the specified account"
+    },
+    "39134": {
+        "Token": "UVE_ULR",
+        "Description": "The user limit has been reached on the server"
+    },
+    "39135": {
+        "Token": "UVE_NO_NLS",
+        "Description": "NLS is not available"
+    },
+    "39136": {
+        "Token": "UVE_MAP_NOT_FOUND",
+        "Description": "NLS map not found"
+    },
+    "39137": {
+        "Token": "UVE_NO_LOCALE",
+        "Description": "NLS locale support not available"
+    },
+    "39138": {
+        "Token": "UVE_LOCALE_NOT_FOUND",
+        "Description": "NLS locale not found"
+    },
+    "39139": {
+        "Token": "UVE_CATEGORY_NOT_FOUND",
+        "Description": "NLS locale category not found"
+    },
+    "39201": {
+        "Token": "UVE_SR_SOCK_CON_FAIL",
+        "Description": "The server failed to connect to the socket"
+    },
+    "39210": {
+        "Token": "UVE_SR_SELECT_FAIL",
+        "Description": "The server failed to select on input channel. When you see this error, you must quit and reopen the session."
+    },
+    "39211": {
+        "Token": "UVE_SR_SELECT_TIMEOUT",
+        "Description": "The select has timed out"
+    },
+    "40001": {
+        "Token": "UVE_INVALIDFIELD",
+        "Description": "Pointer error in a sequential file operation"
+    },
+    "40002": {
+        "Token": "UVE_SESSIONEXISTS",
+        "Description": "The session is already open"
+    },
+    "40003": {
+        "Token": "UVE_BADPARAM",
+        "Description": "An invalid parameter was passed to a subroutine"
+    },
+    "40004": {
+        "Token": "UVE_BADOBJECT",
+        "Description": "An incorrect object was passed"
+    },
+    "40005": {
+        "Token": "UVE_NOMORE",
+        "Description": "The nextBlock()method was used but there are no more blocks to pass."
+    },
+    "40006": {
+        "Token": "UVE_NOTATINPUT",
+        "Description": "Thereply()method can be used only when the response()method returns UVS_REPLY"
+    },
+    "40007": {
+        "Token": "UVE_INVALID_DATAFIELD",
+        "Description": "The dictionary entry does not have a valid TYPE field"
+    },
+    "40008": {
+        "Token": "UVE_BAD_DICTIONARY_ ENTRY",
+        "Description": "The dictionary entry is invalid"
+    },
+    "40009": {
+        "Token": "UVE_BAD_CONVERSION_ DATA",
+        "Description": "Unable to convert the data in the field"
+    },
+    "45000": {
+        "Token": "UVE_FILE_NOT_OPEN",
+        "Description": "File has been closed, must reopen before performing an operation"
+    },
+    "45001": {
+        "Token": "UVE_OPENSESSION_ERR",
+        "Description": "Maximum number of UniJavasessions already open"
+    },
+    "45002": {
+        "Token": "UVE_NONNULL_RECORDID",
+        "Description": "Cannot perform operation on a nonnull record ID"
+    },
+    "80011": {
+        "Token": "UVE_BAD_LOGINNAME",
+        "Description": "The user name or login name provided is incorrect"
+    },
+    "80019": {
+        "Token": "UVE_BAD_PASSWORD",
+        "Description": "The password has expired"
+    },
+    "80144": {
+        "Token": "UVE_ACCOUNT_EXPIRED",
+        "Description": "The account has expired"
+    },
+    "80147": {
+        "Token": "UVE_RUN_REMOTE_FAILED",
+        "Description": "Unable to run as the given user"
+    },
+    "80148": {
+        "Token": "UVE_UPDATE_USER_FAILED",
+        "Description": "Unable to update user details"
+    },
+    "81001": {
+        "Token": "UVE_RPC_BAD_CONNECTION",
+        "Description": "The connection is bad and may be passing corrupt data."
+    },
+    "81002": {
+        "Token": "UVE_RPC_NO_CONNECTION",
+        "Description": "The connection is broken"
+    },
+    "81005": {
+        "Token": "UVE_RPC_WRONG_VERSION",
+        "Description": "The version of the UniRPC on the server is different from the version on the client."
+    },
+    "81007": {
+        "Token": "UVE_RPC_NO_MORE_ CONNECTIONS",
+        "Description": "No more connections available"
+    },
+    "81009": {
+        "Token": "UVE_RPC_FAILED",
+        "Description": "The UniRPC failed"
+    },
+    "81011": {
+        "Token": "UVE_RPC_UNKNOWN_HOST",
+        "Description": "The host name specified is not valid, or the host is not responding"
+    },
+    "81014": {
+        "Token": "UVE_RPC_CANT_FIND_ SERVICE",
+        "Description": "Cannot find the service in the unirpcservices file"
+    },
+    "81015": {
+        "Token": "UVE_RPC_TIMEOUT",
+        "Description": "The connection has timed out"
+    },
+    "81016": {
+        "Token": "UVE_RPC_REFUSED",
+        "Description": "The connection was refused as the UniRPC daemon is not running"
+    },
+    "81017": {
+        "Token": "UVE_RPC_SOCKET_INIT_ FAILED",
+        "Description": "Failed to initialize the network interface"
+    },
+    "81018": {
+        "Token": "UVE_RPC_SERVICE_PAUSED",
+        "Description": "The UniRPC service has been paused"
+    },
+    "81019": {
+        "Token": "UVE_RPC_BAD_TRANSPORT",
+        "Description": "An invalid transport type has been used"
+    },
+    "81020": {
+        "Token": "UVE_RPC_BAD_PIPE",
+        "Description": "Invalid pipe handle"
+    },
+    "81021": {
+        "Token": "UVE_RPC_PIPE_WRITE_ERROR",
+        "Description": "Error writing to pipe"
+    },
+    "81022": {
+        "Token": "UVE_RPC_PIPE_READ_ERROR",
+        "Description": "Error reading from pipe"
+    }
+}

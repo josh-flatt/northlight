@@ -1,6 +1,8 @@
 import uopy
 import pandas as pd
 import logging
+import json
+from importlib.resources import files
 import os
 import sys
 from dotenv import load_dotenv
@@ -8,6 +10,8 @@ import uopy._errorcodes
 import warnings
 import re
 from typing import Optional
+
+from northlight.integrations.exceptions import ErrorLimitExceededError
 
 
 class UniDataClient:
@@ -45,6 +49,15 @@ class UniDataClient:
         self.path = path
         self.port = port
         self.logger = logging.getLogger(__name__)
+
+        # Error codes can be viewed at:
+        # https://docs.rocketsoftware.com/bundle/grv1653317862214_grv1653317862214/page/nhb1653316841876.html
+        self.uopy_errors: dict = json.loads(
+            files("northlight")
+            .joinpath("resources/uopy_errorcodes.json")
+            .read_text(encoding="utf-8")
+        )
+
         self.__generate_connection()
 
     def __generate_connection(self) -> uopy.Session:
@@ -81,7 +94,8 @@ class UniDataClient:
         queries: list[str],
         clear_selects: bool = True,
         stop_on_error: bool = True,
-    ) -> str:
+        stop_on_empty: bool = True,
+    ) -> Optional[str]:
         """
         Executes a list of queries using a `uopy.Command`
         object and returns the response from the last query.
@@ -95,11 +109,14 @@ class UniDataClient:
             before querying. Defaults to True.
         stop_on_error : bool, optional
             Whether to raise on first TCL/ECL real error. Defaults to True.
+        stop_on_empty : bool, optional
+            Whether to raise on empty result sets. Defaults to True.
 
         Returns
         -------
-        str
-            The response from the last query.
+        Optional[str]
+            The response from the last query, or None if
+            `stop_on_empty` is True and an empty response is encountered.
         """
 
         results = ""
@@ -149,6 +166,8 @@ class UniDataClient:
 
                 elif is_no_data:
                     self.logger.warning(f"{query} ---------------> (No data returned.)")
+                    if stop_on_empty:
+                        return None
 
                 else:
                     summary = (
@@ -167,7 +186,7 @@ class UniDataClient:
 
         return results
 
-    def get_data(
+    def get_file_data(
         self, filename: str, field_list: list[str], id_list: list[str] | None = None
     ) -> list:
         """
@@ -217,6 +236,132 @@ class UniDataClient:
             self.logger.info(f"{len(data)} records returned from file '{filename}'.")
         return data
 
+    def update_file_data(
+        self,
+        file: str,
+        id_list: list,
+        field_list: list,
+        data: list,
+        max_errors: int = 25,
+        is_test: bool = True,
+    ) -> bool:
+        """
+        Applies updates to the specified file in the database.
+
+        All updates are attempted within a single transaction. Individual update
+        failures are logged and counted. If the total number of errors exceeds
+        ``max_errors``, the transaction is rolled back. Otherwise, the transaction
+        is committed unless ``is_test`` is True, in which case it is rolled back.
+
+        Parameters
+        ----------
+        file : str
+            The name of the file to update.
+        id_list : list
+            The list of record IDs to update.
+        field_list : list
+            The list of fields to update.
+        data : list
+            The list of new values to assign. If field_list contains multiple
+            fields, the data should be structured accordingly as a list of lists.
+        max_errors : int, optional
+            The maximum number of errors allowed before rolling back the
+            transaction. Defaults to 25.
+        is_test : bool, optional
+            A flag to indicate if this is a test run. Test runs always roll back
+            the transaction. Defaults to True.
+
+        Returns
+        -------
+        bool
+            True if the transaction completed successfully without exceeding
+            ``max_errors``.
+
+        Raises
+        ------
+        ErrorLimitExceededError
+            If the number of update errors exceeds ``max_errors``.
+        RuntimeError
+            If the database transaction cannot be started.
+        """
+        try:
+            uopy_file = uopy.File(name=file, session=self.session)
+
+            self.session.tx_start()
+
+            if not self.session.tx_is_active():
+                raise RuntimeError("Transaction is not active.")
+
+            old_data: list[str] = uopy_file.read_named_fields(
+                id_list=id_list, field_list=field_list
+            )[
+                3
+            ]  # type: ignore
+
+            responses: tuple = uopy_file.write_named_fields(
+                id_list=id_list, field_list=field_list, field_data_list=data
+            )
+
+            response_codes: uopy.DynArray = responses[0]
+            status_codes: uopy.DynArray = responses[1]
+            ids: uopy.DynArray = responses[2]
+            new_data: uopy.DynArray = responses[3]
+
+            error_count = 0
+
+            for i in range(len(response_codes)):
+
+                record_id = ids[i]
+                response_code = response_codes[i]
+
+                status_msg = self.uopy_errors.get(
+                    response_code,
+                    {"Description": "Unknown error"},
+                )["Description"]
+
+                old_value = old_data[i] if old_data[i] != "" else "None"
+                new_value = new_data[i] if new_data[i] != "" else "None"
+
+                log_msg = (
+                    f"{record_id} ({response_code} {status_msg}): "
+                    f"{old_value} -> {new_value}"
+                )
+
+                if response_code != "0":
+                    error_count += 1
+                    self.logger.error(log_msg)
+                else:
+                    self.logger.info(log_msg)
+
+            if error_count > max_errors:
+                raise ErrorLimitExceededError(
+                    f"Count of errors ({error_count}) exceeded maximum allowed ({max_errors}). Transaction rolled back."
+                )
+
+            if is_test:
+                self.session.tx_rollback()
+                self.logger.warning(
+                    f"(Test) Succeeded with {error_count} error(s). Transaction rolled back."
+                )
+                return True
+
+            self.logger.info(f"Transaction complete with {error_count} error(s).")
+
+            self.session.tx_commit()
+            self.logger.info("Transaction committed successfully.")
+
+            return True
+
+        except ErrorLimitExceededError as e:
+            self.logger.critical(e)
+            self.session.tx_rollback()
+            raise
+
+        except Exception as e:
+            self.logger.critical(f"Unexpected exception occurred: {e}")
+            self.session.tx_rollback()
+            raise
+
     def get_id_list(self, queries: list[str], filename: str) -> uopy.DynArray:
         """
         Retrieves the list of IDs from a file using a
@@ -239,6 +384,39 @@ class UniDataClient:
         select_list = uopy.List()
         id_list = select_list.read_list()
         return id_list
+
+    def call_subroutine(self, sub_name: str, args: list[str]) -> list[str]:
+        """
+        Calls a UniData subroutine with the specified arguments.
+
+        Parameters
+        ----------
+        sub_name : str
+            The name of the subroutine to call.
+        args : list[str]
+            The list of arguments to pass to the subroutine.
+            Note: this list must be ordered according to the
+            subroutine's expected argument order. INCLUDE the
+            empty strings for unused arguments & the return
+            argument, if applicable.
+
+        Returns
+        -------
+        list[str]
+            The list of arguments after the subroutine call.
+        """
+
+        num_args = len(args)
+        subroutine: uopy.Subroutine = uopy.Subroutine(
+            name=sub_name, num_args=num_args, session=self.session
+        )
+
+        for i in range(num_args):
+            subroutine.args[i] = args[i]
+
+        subroutine.call()
+
+        return subroutine.args
 
     def close_connection(self) -> None:
         """

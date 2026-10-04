@@ -30,3 +30,6 @@ Issues = "https://github.com/josh-flatt/northlight/issues"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.setuptools.package-data]
+"northlight" = ["resources/*"]

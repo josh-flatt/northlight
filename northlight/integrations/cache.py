@@ -266,7 +266,7 @@ class Cache:
                 "saved_at": self._cache[key]["saved_at"],
                 "file": self._cache[key]["file"],
             }
-            self._logger.info(f"Cache info for '{key}': {cache_info[key]}")
+            self._logger.debug(f"Cache info for '{key}': {cache_info[key]}")
 
         self._logger.info(f"Saving cache metadata to {self._cache_file}.")
 
