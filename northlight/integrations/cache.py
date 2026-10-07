@@ -130,13 +130,12 @@ class Cache:
             If the expiration time is in the past.
         """
         expires_dt = datetime.datetime.max
+        expiration_timestamp = expires_dt.timestamp()
         if ttl is not None and ttl.total_seconds() < 0:
             raise ValueError("Expiration time cannot be in the past.")
         if ttl is not None:
             expiration_timestamp = (datetime.datetime.now() + ttl).timestamp()
             expires_dt = datetime.datetime.fromtimestamp(expiration_timestamp)
-        else:
-            expiration_timestamp = None
         self._cache[key] = {
             "file": f"{self._cache_dir}/{key}.pkl",
             "expires": expiration_timestamp,
