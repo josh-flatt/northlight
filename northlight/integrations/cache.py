@@ -70,7 +70,18 @@ class Cache:
         None
         """
 
-        entry = self._cache.get(key)
+        entry = None
+        with open(self._cache_file, "r") as f:
+            try:
+                self._cache = json.load(f)
+            except json.JSONDecodeError:
+                self._logger.warning(
+                    "Cache file is empty or corrupted. Starting with an empty cache."
+                )
+                self._cache = {}
+            entry = self._cache.get(key)
+
+        # entry = self._cache.get(key)
         data = None
 
         if key not in self._cache:
@@ -78,6 +89,7 @@ class Cache:
             return None
         if entry is None:
             self._logger.info(f"Key '{key}' not found in cache or entry is None.")
+
             return None
         if entry["expires"] is not None:
             if reference_time.timestamp() > entry["expires"]:
@@ -94,6 +106,8 @@ class Cache:
                 data = pickle.load(f)
         except FileNotFoundError:
             self._logger.warning(f"Cache file for key '{key}' not found.")
+            self.delete(key)
+            self._save_cache()
             return None
         except EOFError:
             self._logger.warning(
@@ -129,6 +143,16 @@ class Cache:
         ValueError
             If the expiration time is in the past.
         """
+
+        with open(self._cache_file, "r") as f:
+            try:
+                self._cache = json.load(f)
+            except json.JSONDecodeError:
+                self._cache = {}
+                self._logger.warning(
+                    "Cache file is empty or corrupted. Starting with an empty cache."
+                )
+
         expires_dt = datetime.datetime.max
         expiration_timestamp = expires_dt.timestamp()
         if ttl is not None and ttl.total_seconds() < 0:
@@ -167,6 +191,16 @@ class Cache:
         ------
         None
         """
+
+        with open(self._cache_file, "r") as f:
+            try:
+                self._cache = json.load(f)
+            except json.JSONDecodeError:
+                self._cache = {}
+                self._logger.warning(
+                    "Cache file is empty or corrupted. Starting with an empty cache."
+                )
+
         if key in self._cache:
             tmp_file = self._cache[key]["file"]
             if os.path.exists(tmp_file):
@@ -210,6 +244,16 @@ class Cache:
         int
             The number of expired cache entries that were cleared.
         """
+
+        with open(self._cache_file, "r") as f:
+            try:
+                self._cache = json.load(f)
+            except json.JSONDecodeError:
+                self._cache = {}
+                self._logger.warning(
+                    "Cache file is empty or corrupted. Starting with an empty cache."
+                )
+
         now = datetime.datetime.now().timestamp()
         keys_to_delete = [
             key
