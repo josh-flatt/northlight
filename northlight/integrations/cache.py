@@ -39,6 +39,12 @@ class Cache:
         self._logger = logging.getLogger(__name__)
         if not os.path.exists(self._cache_dir):
             os.makedirs(self._cache_dir)
+        if not os.path.exists(self._cache_file):
+            self._logger.info(
+                f"Cache file '{self._cache_file}' does not exist. Initializing file."
+            )
+            with open(self._cache_file, "w") as f:
+                json.dump({}, f)
         self._load_cache()
         removed = self._clear_expired()
         if removed > 0:
