@@ -33,7 +33,6 @@ class Cache:
         if path is None:
             path = "./cache"
 
-        self._cache = {}
         self._cache_dir = path
         self._cache_file = os.path.join(self._cache_dir, "cache.json")
         self._logger = logging.getLogger(__name__)
@@ -49,7 +48,6 @@ class Cache:
         removed = self._clear_expired()
         if removed > 0:
             self._logger.info(f"Cleared {removed} expired cache entries.")
-            self._save_cache()
 
     def get(
         self, key: str, reference_time: datetime.datetime = datetime.datetime.now()
@@ -77,25 +75,24 @@ class Cache:
         """
 
         entry = None
+        cache = {}
         with open(self._cache_file, "r") as f:
             try:
-                self._cache = json.load(f)
+                cache = json.load(f)
             except json.JSONDecodeError:
                 self._logger.warning(
                     "Cache file is empty or corrupted. Starting with an empty cache."
                 )
-                self._cache = {}
-            entry = self._cache.get(key)
+            entry = cache.get(key)
 
         # entry = self._cache.get(key)
         data = None
 
-        if key not in self._cache:
+        if key not in cache:
             self._logger.info(f"Key '{key}' not found in cache.")
             return None
         if entry is None:
             self._logger.info(f"Key '{key}' not found in cache or entry is None.")
-
             return None
         if entry["expires"] is not None:
             if reference_time.timestamp() > entry["expires"]:
@@ -104,7 +101,7 @@ class Cache:
                     f"Cache entry for key '{key}' has expired (was {expiration_dt.strftime('%m-%d-%Y %H:%M:%S')})."
                 )
                 self.delete(key)
-                self._save_cache()
+                # self._save_cache(cache)
                 return None
         self._logger.info(f"Key '{key}' found and valid in cache.")
         try:
@@ -113,14 +110,14 @@ class Cache:
         except FileNotFoundError:
             self._logger.warning(f"Cache file for key '{key}' not found.")
             self.delete(key)
-            self._save_cache()
+            # self._save_cache(cache)
             return None
         except EOFError:
             self._logger.warning(
                 f"Cache file for key '{key}' is empty or incomplete. Deleting."
             )
             self.delete(key)
-            self._save_cache()
+            # self._save_cache(cache)
             return None
         return data
 
@@ -149,12 +146,12 @@ class Cache:
         ValueError
             If the expiration time is in the past.
         """
-
+        cache = {}
         with open(self._cache_file, "r") as f:
             try:
-                self._cache = json.load(f)
+                cache = json.load(f)
             except json.JSONDecodeError:
-                self._cache = {}
+                cache = {}
                 self._logger.warning(
                     "Cache file is empty or corrupted. Starting with an empty cache."
                 )
@@ -166,18 +163,18 @@ class Cache:
         if ttl is not None:
             expiration_timestamp = (datetime.datetime.now() + ttl).timestamp()
             expires_dt = datetime.datetime.fromtimestamp(expiration_timestamp)
-        self._cache[key] = {
+        cache[key] = {
             "file": f"{self._cache_dir}/{key}.pkl",
             "expires": expiration_timestamp,
             "saved_at": datetime.datetime.now().timestamp(),
         }
-        with open(self._cache[key]["file"], "wb") as f:
+        with open(cache[key]["file"], "wb") as f:
             pickle.dump(value, f)
 
         self._logger.info(
             f"Key '{key}' saved in cache with TTL {expires_dt.strftime('%m-%d-%Y %H:%M:%S')}."
         )
-        self._save_cache()
+        self._save_cache(cache)
 
     def delete(self, key: str) -> bool:
         """
@@ -197,22 +194,22 @@ class Cache:
         ------
         None
         """
-
+        cache = {}
         with open(self._cache_file, "r") as f:
             try:
-                self._cache = json.load(f)
+                cache = json.load(f)
             except json.JSONDecodeError:
-                self._cache = {}
+                cache = {}
                 self._logger.warning(
                     "Cache file is empty or corrupted. Starting with an empty cache."
                 )
 
-        if key in self._cache:
-            tmp_file = self._cache[key]["file"]
+        if key in cache:
+            tmp_file = cache[key]["file"]
             if os.path.exists(tmp_file):
                 os.remove(tmp_file)
-            del self._cache[key]
-            self._save_cache()
+            del cache[key]
+            self._save_cache(cache)
             return True
         self._logger.info(f"Key '{key}' not found in cache.")
         return False
@@ -231,8 +228,8 @@ class Cache:
         None
         """
         # Clear cache in memory
-        self._cache = {}
-        self._save_cache()
+        cache = {}
+        self._save_cache(cache)
 
         # Clear .pkl files
         for file in os.listdir(self._cache_dir):
@@ -250,12 +247,12 @@ class Cache:
         int
             The number of expired cache entries that were cleared.
         """
-
+        cache = {}
         with open(self._cache_file, "r") as f:
             try:
-                self._cache = json.load(f)
+                cache = json.load(f)
             except json.JSONDecodeError:
-                self._cache = {}
+                cache = {}
                 self._logger.warning(
                     "Cache file is empty or corrupted. Starting with an empty cache."
                 )
@@ -263,44 +260,48 @@ class Cache:
         now = datetime.datetime.now().timestamp()
         keys_to_delete = [
             key
-            for key, entry in self._cache.items()
+            for key, entry in cache.items()
             if entry["expires"] is not None and entry["expires"] < now
         ]
         for key in keys_to_delete:
-            expiration_dt = datetime.datetime.fromtimestamp(self._cache[key]["expires"])
+            expiration_dt = datetime.datetime.fromtimestamp(cache[key]["expires"])
             self._logger.info(
                 f"Key '{key}' has expired (was {expiration_dt.strftime('%m-%d-%Y %H:%M:%S')})."
             )
 
             # Remove .pkl file if exists
-            tmp_file = self._cache[key]["file"]
+            tmp_file = cache[key]["file"]
             if os.path.exists(tmp_file):
                 os.remove(tmp_file)
                 self._logger.info(f"Removed tmp file {tmp_file}.")
 
-            del self._cache[key]
+            del cache[key]
             self._logger.info(f"Key '{key}' removed.")
 
+        self._save_cache(cache)
         return len(keys_to_delete)
 
-    def _load_cache(self):
+    def _load_cache(self) -> dict:
         """
         Loads cache from file.
 
         Returns
         -------
-        None
+        dict
+            The loaded cache as a dictionary.
         """
+        cache = {}
         if os.path.exists(self._cache_file):
             with open(self._cache_file, "r") as f:
-                self._cache = json.load(f)
+                cache = json.load(f)
         else:
-            self._cache = {}
+            cache = {}
             self._logger.info(
                 f"Cache file '{self._cache_file}' not found. Initializing empty cache."
             )
+        return cache
 
-    def _save_cache(self):
+    def _save_cache(self, cache: dict) -> None:
         """
         Saves the current state of the cache to the file specified by self._cache_file.
 
@@ -310,11 +311,12 @@ class Cache:
         """
 
         cache_info = {}
-        for key in self._cache:
+
+        for key in cache:
             cache_info[key] = {
-                "expires": self._cache[key]["expires"],
-                "saved_at": self._cache[key]["saved_at"],
-                "file": self._cache[key]["file"],
+                "expires": cache[key]["expires"],
+                "saved_at": cache[key]["saved_at"],
+                "file": cache[key]["file"],
             }
             self._logger.debug(f"Cache info for '{key}': {cache_info[key]}")
 
@@ -323,3 +325,4 @@ class Cache:
         with open(self._cache_file, "w") as f:
             json.dump(cache_info, f, indent=4)
         self._logger.info("Cache saved.")
+        return
