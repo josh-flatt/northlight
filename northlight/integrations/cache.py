@@ -39,11 +39,7 @@ class Cache:
         if not os.path.exists(self._cache_dir):
             os.makedirs(self._cache_dir)
         if not os.path.exists(self._cache_file):
-            self._logger.info(
-                f"Cache file '{self._cache_file}' does not exist. Initializing file."
-            )
-            with open(self._cache_file, "w") as f:
-                json.dump({}, f)
+            self._save_cache({})
         self._load_cache()
         removed = self._clear_expired()
         if removed > 0:
@@ -76,16 +72,9 @@ class Cache:
 
         entry = None
         cache = {}
-        with open(self._cache_file, "r") as f:
-            try:
-                cache = json.load(f)
-            except json.JSONDecodeError:
-                self._logger.warning(
-                    "Cache file is empty or corrupted. Starting with an empty cache."
-                )
-            entry = cache.get(key)
+        cache = self._load_cache()
+        entry = cache.get(key, None)
 
-        # entry = self._cache.get(key)
         data = None
 
         if key not in cache:
@@ -101,24 +90,9 @@ class Cache:
                     f"Cache entry for key '{key}' has expired (was {expiration_dt.strftime('%m-%d-%Y %H:%M:%S')})."
                 )
                 self.delete(key)
-                # self._save_cache(cache)
                 return None
-        self._logger.info(f"Key '{key}' found and valid in cache.")
-        try:
-            with open(entry["file"], "rb") as f:
-                data = pickle.load(f)
-        except FileNotFoundError:
-            self._logger.warning(f"Cache file for key '{key}' not found.")
-            self.delete(key)
-            # self._save_cache(cache)
-            return None
-        except EOFError:
-            self._logger.warning(
-                f"Cache file for key '{key}' is empty or incomplete. Deleting."
-            )
-            self.delete(key)
-            # self._save_cache(cache)
-            return None
+        self._logger.info(f"Key '{key}' found in cache.")
+        data = self._load_pickle_file(entry["file"])
         return data
 
     def set(self, key: str, value: Any, ttl: datetime.timedelta | None = None):
@@ -147,14 +121,7 @@ class Cache:
             If the expiration time is in the past.
         """
         cache = {}
-        with open(self._cache_file, "r") as f:
-            try:
-                cache = json.load(f)
-            except json.JSONDecodeError:
-                cache = {}
-                self._logger.warning(
-                    "Cache file is empty or corrupted. Starting with an empty cache."
-                )
+        cache = self._load_cache()
 
         expires_dt = datetime.datetime.max
         expiration_timestamp = expires_dt.timestamp()
@@ -168,8 +135,8 @@ class Cache:
             "expires": expiration_timestamp,
             "saved_at": datetime.datetime.now().timestamp(),
         }
-        with open(cache[key]["file"], "wb") as f:
-            pickle.dump(value, f)
+        tmp_file = cache[key]["file"]
+        self._save_pickle_file(tmp_file, value)
 
         self._logger.info(
             f"Key '{key}' saved in cache with TTL {expires_dt.strftime('%m-%d-%Y %H:%M:%S')}."
@@ -195,21 +162,13 @@ class Cache:
         None
         """
         cache = {}
-        with open(self._cache_file, "r") as f:
-            try:
-                cache = json.load(f)
-            except json.JSONDecodeError:
-                cache = {}
-                self._logger.warning(
-                    "Cache file is empty or corrupted. Starting with an empty cache."
-                )
+        cache = self._load_cache()
 
         if key in cache:
             tmp_file = cache[key]["file"]
-            if os.path.exists(tmp_file):
-                os.remove(tmp_file)
             del cache[key]
             self._save_cache(cache)
+            self._delete_pickle_file(tmp_file)
             return True
         self._logger.info(f"Key '{key}' not found in cache.")
         return False
@@ -227,7 +186,7 @@ class Cache:
         ------
         None
         """
-        # Clear cache in memory
+        # Clear cache file
         cache = {}
         self._save_cache(cache)
 
@@ -248,14 +207,7 @@ class Cache:
             The number of expired cache entries that were cleared.
         """
         cache = {}
-        with open(self._cache_file, "r") as f:
-            try:
-                cache = json.load(f)
-            except json.JSONDecodeError:
-                cache = {}
-                self._logger.warning(
-                    "Cache file is empty or corrupted. Starting with an empty cache."
-                )
+        cache = self._load_cache()
 
         now = datetime.datetime.now().timestamp()
         keys_to_delete = [
@@ -271,9 +223,7 @@ class Cache:
 
             # Remove .pkl file if exists
             tmp_file = cache[key]["file"]
-            if os.path.exists(tmp_file):
-                os.remove(tmp_file)
-                self._logger.info(f"Removed tmp file {tmp_file}.")
+            self._delete_pickle_file(tmp_file)
 
             del cache[key]
             self._logger.info(f"Key '{key}' removed.")
@@ -292,8 +242,19 @@ class Cache:
         """
         cache = {}
         if os.path.exists(self._cache_file):
-            with open(self._cache_file, "r") as f:
-                cache = json.load(f)
+            try:
+                with open(self._cache_file, "r") as f:
+                    cache = json.load(f)
+            except json.JSONDecodeError:
+                cache = {}
+                self._logger.warning(
+                    "Cache file is empty or corrupted. Starting with an empty cache."
+                )
+            except Exception as e:
+                cache = {}
+                self._logger.warning(
+                    f"Unexpected error while loading cache file: {e}. Starting with an empty cache."
+                )
         else:
             cache = {}
             self._logger.info(
@@ -312,6 +273,12 @@ class Cache:
 
         cache_info = {}
 
+        if not cache:
+            self._logger.warning("Saving empty cache.")
+            with open(self._cache_file, "w") as f:
+                json.dump({}, f, indent=4)
+            return
+
         for key in cache:
             cache_info[key] = {
                 "expires": cache[key]["expires"],
@@ -321,8 +288,88 @@ class Cache:
             self._logger.debug(f"Cache info for '{key}': {cache_info[key]}")
 
         self._logger.info(f"Saving cache metadata to {self._cache_file}.")
+        if not cache_info:
+            self._logger.warning("No cache info found. Saving empty cache.")
+            with open(self._cache_file, "w") as f:
+                json.dump({}, f, indent=4)
+            return
 
         with open(self._cache_file, "w") as f:
             json.dump(cache_info, f, indent=4)
         self._logger.info("Cache saved.")
         return
+
+    def _load_pickle_file(self, file_path: str) -> Any:
+        """
+        Loads a pickle file from the given file path.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the pickle file to load.
+
+        Returns
+        -------
+        Any
+            The object loaded from the pickle file.
+        """
+
+        data = None
+        try:
+            with open(file_path, "rb") as f:
+                data = pickle.load(f)
+        except FileNotFoundError:
+            self._logger.warning(f"Pickle file '{file_path}' not found.")
+            return None
+        except EOFError:
+            self._logger.warning(f"Pickle file '{file_path}' is empty or incomplete.")
+            self._delete_pickle_file(file_path)
+            return None
+        except Exception as e:
+            self._logger.warning(
+                f"Unexpected error while loading pickle file '{file_path}': {e}"
+            )
+            self._delete_pickle_file(file_path)
+            return None
+        return data
+
+    def _save_pickle_file(self, file_path: str, obj: Any) -> None:
+        """
+        Saves an object to a pickle file at the given file path.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the pickle file to save.
+        obj : Any
+            The object to save to the pickle file.
+
+        Returns
+        -------
+        None
+        """
+        try:
+            with open(file_path, "wb") as f:
+                pickle.dump(obj, f)
+        except Exception as e:
+            self._logger.warning(f"Failed to save pickle file '{file_path}': {e}")
+
+    def _delete_pickle_file(self, file_path: str) -> None:
+        """
+        Deletes the pickle file at the given file path.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the pickle file to delete.
+
+        Returns
+        -------
+        None
+        """
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            self._logger.error(f"Failed to delete pickle file '{file_path}': {e}")
+            raise e
