@@ -36,9 +36,8 @@ class Cache:
         self._cache_dir = path
         self._cache_file = os.path.join(self._cache_dir, "cache.json")
         self._logger = logging.getLogger(__name__)
-        if not os.path.exists(self._cache_dir):
-            os.makedirs(self._cache_dir)
         if not os.path.exists(self._cache_file):
+            os.makedirs(self._cache_dir, exist_ok=True)
             self._save_cache({})
         self._load_cache()
         removed = self._clear_expired()
